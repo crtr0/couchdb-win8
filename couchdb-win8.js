@@ -1,15 +1,15 @@
-(function (globals) {
+﻿(function (globals) {
 
     var
 
     // required, please include port if not 80
-    c_url,
+    _url,
     // optional
-    c_username,
-    c_password,
+    _username,
+    _password,
 
 
-    get = function (url, params, success, error) {
+    _get = function (url, params, success, error) {
         var queryStr = "";
         if (params !== null) {
             queryStr = "?"
@@ -19,7 +19,7 @@
             });
         }
         
-        WinJS.xhr({ user: c_username, password: c_password, url: url + queryStr }).then(
+        WinJS.xhr({ url: url + queryStr }).then(
             function (request) {
                 if (typeof success === "function") {
                     success(JSON.parse(request.responseText));
@@ -33,16 +33,11 @@
         );
     },
 
-    post = function (url, dataHash, success, error) {
-        var dataStr = "";
-        Object.keys(dataHash).forEach(function (key, i) {
-            if (i !== 0) { dataStr = dataStr + "&"; }
-            dataStr = dataStr + key + "=" + encodeURIComponent(dataHash[key]);
-        });
-
+    _save = function (method, url, doc, success, error) {
+        var dataStr = JSON.stringify(doc);
         WinJS.xhr({
-            type: "post", user: accountSid, password: authKey, url: url,
-            headers: { "Content-type": "application/x-www-form-urlencoded" },
+            type: method, url: url,
+            headers: { "Content-type": "application/json" },
             data: dataStr
         }).then(
             function (request) {
@@ -58,15 +53,24 @@
         );
     },
 
+    _post = function (url, doc, success, error) {
+        _save('post', url, doc, success, error);
+    },
+
+    _put = function (url, doc, success, error) {
+        _save('put', url, doc, success, error);
+    },
+
+
     couch = globals.couch = {};
 
     /* These are the wrappers for the Twilio REST API */
 
     couch.setup = function (url, options) {
-        c_url = url;
+        _url = url;
         if (options) {
-            c_username = options.username;
-            c_password = options.password;
+            _username = options.username;
+            _password = options.password;
         }
     };
 
@@ -77,13 +81,17 @@
         this.name = name;
     };
 
-    couch.database.prototype.get = function (doc, success, error) {
-        get(c_url + '/' + this.name + '/' + doc, {}, success, error);
+    couch.database.prototype.get = function (id, success, error) {
+        _get(_url + '/' + this.name + '/' + id, {}, success, error);
     };
 
-    //couch.getSmsMessages = function (to, date, success, error) {
-    //    get(apiRoot + "/Accounts/" + accountSid + "/SMS/Messages.json", { To: to, DateSent: date }, success, error);
-    //};
+    couch.database.prototype.view = function (view, success, error) {
+        _get(_url + '/' + this.name + '/' + view, {}, success, error);
+    };
+
+    couch.database.prototype.save = function (doc, success, error) {
+        _post(_url + '/' + this.name, doc, success, error);
+    };
+
 
 }(window));
-
