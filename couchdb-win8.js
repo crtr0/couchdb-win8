@@ -3,13 +3,13 @@
     var
 
     // required, please include port if not 80
-    _url,
+    couch_url,
     // optional
-    _username,
-    _password,
+    couch_username,
+    couch_password,
 
 
-    _get = function (url, params, success, error) {
+    get = function (url, params, success, error) {
         var queryStr = "";
         if (params !== null) {
             queryStr = "?"
@@ -33,7 +33,7 @@
         );
     },
 
-    _save = function (method, url, doc, success, error) {
+    save = function (method, url, doc, success, error) {
         var dataStr = JSON.stringify(doc);
         WinJS.xhr({
             type: method, url: url,
@@ -53,24 +53,23 @@
         );
     },
 
-    _post = function (url, doc, success, error) {
+    post = function (url, doc, success, error) {
         _save('post', url, doc, success, error);
     },
 
-    _put = function (url, doc, success, error) {
+    put = function (url, doc, success, error) {
         _save('put', url, doc, success, error);
     },
-
 
     couch = globals.couch = {};
 
     /* These are the wrappers for the Twilio REST API */
 
     couch.setup = function (url, options) {
-        _url = url;
+        couch_url = url;
         if (options) {
-            _username = options.username;
-            _password = options.password;
+            couch_username = options.username;
+            couch_password = options.password;
         }
     };
 
@@ -82,15 +81,15 @@
     };
 
     couch.database.prototype.get = function (id, success, error) {
-        _get(_url + '/' + this.name + '/' + id, {}, success, error);
+        get(couch_url + '/' + this.name + '/' + id, {}, success, error);
     };
 
     couch.database.prototype.view = function (view, success, error) {
-        _get(_url + '/' + this.name + '/' + view, {}, success, error);
+        get(couch_url + '/' + this.name + '/' + view, {}, success, error);
     };
 
     couch.database.prototype.save = function (doc, success, error) {
-        _post(_url + '/' + this.name, doc, success, error);
+        post(couch_url + '/' + this.name, doc, success, error);
     };
 
 
